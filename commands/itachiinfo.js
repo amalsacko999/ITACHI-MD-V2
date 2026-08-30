@@ -1,0 +1,7 @@
+// itachiinfo.js — ITACHI-XMD-V2
+async function itachiinfoCommand(sock, chatId, message) {
+    await sock.sendMessage(chatId, {
+        text: `🥷 *ITACHI UCHIHA — Histoire Complete*\n\n━━━━━━━━━━━━━━━━━━\n\n📖 *Origine :*\nItachi Uchiha est un prodige du clan Uchiha du village de Konoha. Des son plus jeune age, il montre des capacites exceptionnelles et rejoint rapidement l'ANBU, la force speciale du village.\n\n⚔️ *La Mission Impossible :*\nPour empecher une guerre civile entre le clan Uchiha et le village de Konoha, Itachi recoit une mission secrete et dechirante : eliminer son propre clan. Il accepte ce fardeau pour proteger la paix. Il epargne uniquement son petit frere *Sasuke Uchiha* pour qu'il survive et devienne plus fort.\n\n🩸 *Le Sacrifice :*\nApres cet evenement tragique, Itachi devient un criminel recherche aux yeux du monde. Il rejoint l'organisation *Akatsuki* en tant qu'espion secret pour Konoha, portant seul le poids de ses choix.\n\n💀 *La Verite Revelee :*\nItachi meurt lors de son combat contre Sasuke. Apres sa mort, la verite eclate : il a toujours protege son frere et son village dans l'ombre. Il n'etait pas un traître — il etait un heros.\n\n✨ *Heritage :*\n_"Le sacrifice le plus grand est celui dont personne ne connait le nom."_\n\n🥷 Itachi est considere comme le heros tragique de Naruto — un homme qui a sacrifie sa vie, sa reputation et son bonheur pour la paix.\n\n━━━━━━━━━━━━━━━━━━\n> 🥷 Propulse par *IBSACKO™ · CENTRAL-HEX*`
+    }, { quoted: message });
+}
+module.exports = itachiinfoCommand;
