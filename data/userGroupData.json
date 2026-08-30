@@ -1,0 +1,11 @@
+{
+  "antibadword": {},
+  "antilink": {},
+  "welcome": {},
+  "goodbye": {},
+  "chatbot": {
+    "123@g.us": true
+  },
+  "warnings": {},
+  "sudo": []
+}
