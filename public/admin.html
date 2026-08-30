@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — ITACHI-XMD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1417;
+    --panel:#161C21;
+    --panel2:#1C2329;
+    --line:#252E35;
+    --text:#E8EDF0;
+    --muted:#7C8A94;
+    --gold:#E0A83E;
+    --gold-dim:#8A6A2C;
+    --cyan:#3FD6C4;
+    --red:#E5484D;
+    --radius:14px;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --sans:'Inter',ui-sans-serif,system-ui,sans-serif;
+    --display:'Space Grotesk',var(--sans);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    min-height:100vh;
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(224,168,62,.05), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(63,214,196,.04), transparent 40%);
+  }
+  /* ── motif hexagonal signature, en filigrane ── */
+  .hex-bg{
+    position:fixed; inset:0; z-index:0; opacity:.35; pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cpath d='M28 0L56 25V75L28 100L0 75V25Z' fill='none' stroke='%23222b31' stroke-width='1'/%3E%3C/svg%3E");
+    background-size:56px 100px;
+  }
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
+
+  /* ── écran de connexion ── */
+  #login-screen{
+    position:relative; z-index:1;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .login-card{
+    width:100%; max-width:380px;
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:36px 32px; text-align:center;
+  }
+  .hex-mark{
+    width:56px; height:56px; margin:0 auto 18px;
+    display:flex; align-items:center; justify-content:center;
+    clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    background:linear-gradient(135deg, var(--gold), var(--gold-dim));
+    font-size:24px;
+  }
+  .login-card h1{ font-family:var(--display); font-size:20px; margin:0 0 4px; letter-spacing:.02em; }
+  .login-card p.sub{ color:var(--muted); font-size:13px; margin:0 0 24px; }
+  .field{ text-align:left; margin-bottom:16px; }
+  .field label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.06em; }
+  .field input{
+    width:100%; background:var(--panel2); border:1px solid var(--line); border-radius:9px;
+    color:var(--text); font-family:var(--mono); font-size:14px; padding:11px 13px;
+  }
+  .field input:focus{ outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold); }
+  .btn{
+    width:100%; border:0; border-radius:9px; padding:12px 16px; font-family:var(--sans);
+    font-weight:600; font-size:14px; cursor:pointer; transition:transform .12s ease, opacity .12s ease;
+  }
+  .btn:active{ transform:scale(.98); }
+  .btn:focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+  .btn-primary{ background:var(--gold); color:#171106; }
+  .btn-primary:hover{ opacity:.92; }
+  .btn-ghost{ background:transparent; border:1px solid var(--line); color:var(--text); }
+  .btn-ghost:hover{ border-color:var(--muted); }
+  .btn-danger{ background:var(--red); color:#fff; }
+  .btn-danger:hover{ opacity:.9; }
+  .btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .error-msg{ color:var(--red); font-size:13px; margin-top:12px; min-height:16px; }
+
+  /* ── dashboard ── */
+  #dashboard{ position:relative; z-index:1; max-width:1040px; margin:0 auto; padding:32px 20px 60px; }
+  header.top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:14px; }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand .hex-mark{ width:38px; height:38px; margin:0; font-size:16px; }
+  .brand h1{ font-family:var(--display); font-size:18px; margin:0; }
+  .brand .tag{ color:var(--muted); font-size:12px; font-family:var(--mono); }
+  .status-pill{
+    display:inline-flex; align-items:center; gap:7px; font-size:12px; font-family:var(--mono);
+    padding:6px 12px; border-radius:100px; border:1px solid var(--line); color:var(--muted);
+  }
+  .dot{ width:8px; height:8px; border-radius:50%; background:var(--muted); }
+  .dot.on{ background:var(--cyan); box-shadow:0 0 0 0 rgba(63,214,196,.6); animation:pulse 2s infinite; }
+  .dot.warn{ background:var(--red); }
+  @keyframes pulse{
+    0%{ box-shadow:0 0 0 0 rgba(63,214,196,.5); }
+    70%{ box-shadow:0 0 0 8px rgba(63,214,196,0); }
+    100%{ box-shadow:0 0 0 0 rgba(63,214,196,0); }
+  }
+
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px; }
+  .card{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px; }
+  .card h2{ font-family:var(--display); font-size:14px; margin:0 0 4px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+  .card .big{ font-family:var(--mono); font-size:26px; font-weight:600; margin:6px 0 2px; }
+  .card .cap{ font-size:12px; color:var(--muted); }
+
+  .stat-row{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line); font-size:13px; }
+  .stat-row:last-child{ border-bottom:0; }
+  .stat-row span:first-child{ color:var(--muted); }
+  .stat-row span:last-child{ font-family:var(--mono); }
+
+  .session-row{ display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--line); font-size:13px; }
+  .session-row:last-child{ border-bottom:0; }
+  .badge{ font-size:11px; font-family:var(--mono); padding:3px 9px; border-radius:100px; border:1px solid var(--line); }
+  .badge.connected{ color:var(--cyan); border-color:var(--cyan); }
+  .badge.error, .badge.logged_out{ color:var(--red); border-color:var(--red); }
+  .badge.waiting_qr, .badge.waiting_code, .badge.requesting_code{ color:var(--gold); border-color:var(--gold); }
+  .empty{ color:var(--muted); font-size:13px; font-style:italic; }
+
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
+  .switch{ position:relative; width:46px; height:26px; flex-shrink:0; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider{ position:absolute; inset:0; background:var(--panel2); border:1px solid var(--line); border-radius:100px; cursor:pointer; transition:.15s; }
+  .slider::before{ content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:var(--muted); border-radius:50%; transition:.15s; }
+  input:checked + .slider{ background:rgba(224,168,62,.18); border-color:var(--gold); }
+  input:checked + .slider::before{ transform:translateX(20px); background:var(--gold); }
+  input:focus-visible + .slider{ outline:2px solid var(--gold); outline-offset:2px; }
+  .toggle-label{ font-size:13px; }
+  .toggle-label .desc{ display:block; color:var(--muted); font-size:12px; margin-top:2px; }
+
+  .update-card input[type=text]{
+    width:100%; background:var(--panel2); border:1px solid var(--line); border-radius:9px;
+    color:var(--text); font-family:var(--mono); font-size:13px; padding:10px 12px; margin:10px 0;
+  }
+  .update-card input:focus{ outline:2px solid var(--gold); outline-offset:1px; border-color:var(--gold); }
+  .progress-log{ font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:10px; min-height:18px; }
+  .progress-log.error{ color:var(--red); }
+  .progress-log.done{ color:var(--cyan); }
+
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--panel2); border:1px solid var(--line); border-radius:10px;
+    padding:11px 18px; font-size:13px; z-index:10; opacity:0; transition:opacity .2s;
+    pointer-events:none;
+  }
+  .toast.show{ opacity:1; }
+  .hidden{ display:none !important; }
+</style>
+</head>
+<body>
+<div class="hex-bg"></div>
+
+<div id="login-screen">
+  <div class="login-card">
+    <div class="hex-mark">🥷</div>
+    <h1>ITACHI-XMD</h1>
+    <p class="sub">Dashboard admin — CENTRAL-HEX</p>
+    <div class="field">
+      <label for="pw">Mot de passe</label>
+      <input type="password" id="pw" autocomplete="current-password" placeholder="••••••••">
+    </div>
+    <button class="btn btn-primary" id="loginBtn">Entrer</button>
+    <div class="error-msg" id="loginErr"></div>
+  </div>
+</div>
+
+<div id="dashboard" class="hidden">
+  <header class="top">
+    <div class="brand">
+      <div class="hex-mark">🥷</div>
+      <div>
+        <h1 id="botNameLabel">ITACHI-XMD</h1>
+        <div class="tag">Poste de contrôle</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span class="status-pill"><span class="dot" id="connDot"></span><span id="connLabel">—</span></span>
+      <button class="btn btn-ghost" id="logoutBtn" style="width:auto; padding:8px 14px;">Déconnexion</button>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <div class="card">
+      <h2>Uptime</h2>
+      <div class="big" id="uptimeVal">—</div>
+      <div class="cap">Depuis le dernier démarrage</div>
+    </div>
+
+    <div class="card">
+      <h2>Mémoire</h2>
+      <div class="big" id="memVal">—</div>
+      <div class="cap" id="verVal">—</div>
+    </div>
+
+    <div class="card">
+      <h2>Sessions WhatsApp</h2>
+      <div id="sessionsList"><div class="empty">Chargement...</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Mode d'accès</h2>
+      <div class="toggle-row">
+        <div class="toggle-label">
+          <div id="modeText">—</div>
+          <span class="desc">Public : tout le monde peut utiliser le bot</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="modeToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Maintenance</h2>
+      <div class="toggle-row">
+        <div class="toggle-label">
+          <div id="maintText">—</div>
+          <span class="desc">Bloque tout le monde sauf le propriétaire/sudo</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="maintToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Redémarrer le bot</h2>
+      <div class="cap" style="margin-bottom:12px;">Relance le process WhatsApp proprement.</div>
+      <button class="btn btn-danger" id="restartBtn">Redémarrer maintenant</button>
+    </div>
+
+    <div class="card update-card" style="grid-column:1 / -1;">
+      <h2>Mise à jour</h2>
+      <div class="cap">Colle le lien "Download ZIP" de ton dépôt GitHub.</div>
+      <input type="text" id="zipUrl" placeholder="https://github.com/toncompte/tonrepo/archive/refs/heads/main.zip">
+      <button class="btn btn-primary" id="updateBtn" style="width:auto; padding:10px 20px;">Lancer la mise à jour</button>
+      <div class="progress-log" id="updateLog"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let pollTimer = null;
+
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+function fmtUptime(sec){
+  const d = Math.floor(sec/86400), h = Math.floor((sec%86400)/3600), m = Math.floor((sec%3600)/60);
+  if (d > 0) return `${d}j ${h}h`;
+  if (h > 0) return `${h}h ${m}min`;
+  return `${m}min`;
+}
+
+async function api(path, opts={}){
+  const res = await fetch(path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...(opts.headers||{}) },
+    credentials: 'same-origin'
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+  return data;
+}
+
+async function login(){
+  const pw = $('pw').value;
+  $('loginErr').textContent = '';
+  $('loginBtn').disabled = true;
+  try {
+    await api('/api/admin/login', { method:'POST', body: JSON.stringify({ password: pw }) });
+    $('login-screen').classList.add('hidden');
+    $('dashboard').classList.remove('hidden');
+    refreshStatus();
+    pollTimer = setInterval(refreshStatus, 8000);
+  } catch(e) {
+    $('loginErr').textContent = e.message;
+  } finally {
+    $('loginBtn').disabled = false;
+  }
+}
+
+async function logout(){
+  await api('/api/admin/logout', { method:'POST' }).catch(()=>{});
+  clearInterval(pollTimer);
+  $('dashboard').classList.add('hidden');
+  $('login-screen').classList.remove('hidden');
+  $('pw').value = '';
+}
+
+async function refreshStatus(){
+  try {
+    const s = await api('/api/admin/status');
+    $('botNameLabel').textContent = s.botName || 'ITACHI-XMD';
+    $('uptimeVal').textContent = fmtUptime(s.uptimeSeconds);
+    $('memVal').textContent = s.memoryMB + ' Mo';
+    $('verVal').textContent = `v${s.version} · Node ${s.nodeVersion}`;
+
+    const connected = s.sessions.some(x => x.status === 'connected');
+    $('connDot').className = 'dot ' + (connected ? 'on' : (s.maintenance ? 'warn' : ''));
+    $('connLabel').textContent = connected ? 'En ligne' : 'Hors ligne';
+
+    $('modeText').textContent = s.isPublic ? 'Public' : 'Privé';
+    $('modeToggle').checked = s.isPublic;
+
+    $('maintText').textContent = s.maintenance ? 'Activée' : 'Désactivée';
+    $('maintToggle').checked = s.maintenance;
+
+    const list = $('sessionsList');
+    if (!s.sessions.length) {
+      list.innerHTML = '<div class="empty">Aucune session — connecte un numéro depuis la page /</div>';
+    } else {
+      list.innerHTML = s.sessions.map(sess => `
+        <div class="session-row">
+          <span>${sess.number || sess.id}</span>
+          <span class="badge ${sess.status}">${sess.status}</span>
+        </div>
+      `).join('');
+    }
+  } catch(e) {
+    if (e.message.includes('authentifié')) logout();
+  }
+}
+
+$('loginBtn').addEventListener('click', login);
+$('pw').addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
+$('logoutBtn').addEventListener('click', logout);
+
+$('modeToggle').addEventListener('change', async (e) => {
+  try {
+    await api('/api/admin/mode', { method:'POST', body: JSON.stringify({ isPublic: e.target.checked }) });
+    toast(e.target.checked ? 'Mode public activé' : 'Mode privé activé');
+    refreshStatus();
+  } catch(err) { toast('Erreur : ' + err.message); e.target.checked = !e.target.checked; }
+});
+
+$('maintToggle').addEventListener('change', async (e) => {
+  try {
+    await api('/api/admin/maintenance', { method:'POST', body: JSON.stringify({ enabled: e.target.checked }) });
+    toast(e.target.checked ? 'Maintenance activée' : 'Maintenance désactivée');
+    refreshStatus();
+  } catch(err) { toast('Erreur : ' + err.message); e.target.checked = !e.target.checked; }
+});
+
+$('restartBtn').addEventListener('click', async () => {
+  if (!confirm('Redémarrer le bot maintenant ?')) return;
+  try {
+    await api('/api/admin/restart', { method:'POST' });
+    toast('Redémarrage en cours...');
+  } catch(err) { toast('Erreur : ' + err.message); }
+});
+
+$('updateBtn').addEventListener('click', async () => {
+  const url = $('zipUrl').value.trim();
+  const log = $('updateLog');
+  if (!url) { log.className = 'progress-log error'; log.textContent = "Colle un lien de zip d'abord."; return; }
+  log.className = 'progress-log';
+  log.textContent = 'Démarrage...';
+  $('updateBtn').disabled = true;
+  try {
+    await api('/api/admin/update', { method:'POST', body: JSON.stringify({ zipUrl: url }) });
+    const labels = {
+      downloading: '🔄 Téléchargement du zip...',
+      extracting: '📦 Extraction des fichiers...',
+      replacing: '♻️ Remplacement des anciens fichiers...',
+      restarting: '✅ Terminé — redémarrage du bot...'
+    };
+    const poll = setInterval(async () => {
+      const st = await api('/api/admin/update/status');
+      if (st.step === 'error') {
+        log.className = 'progress-log error';
+        log.textContent = '❌ ' + st.message;
+        clearInterval(poll);
+        $('updateBtn').disabled = false;
+      } else if (st.step === 'restarting') {
+        log.className = 'progress-log done';
+        log.textContent = labels.restarting;
+        clearInterval(poll);
+      } else {
+        log.textContent = labels[st.step] || st.message;
+      }
+    }, 1500);
+  } catch(err) {
+    log.className = 'progress-log error';
+    log.textContent = '❌ ' + err.message;
+    $('updateBtn').disabled = false;
+  }
+});
+
+// Au chargement : si le cookie de session est encore valide, on saute direct au dashboard.
+(async () => {
+  try {
+    await api('/api/admin/status');
+    $('login-screen').classList.add('hidden');
+    $('dashboard').classList.remove('hidden');
+    refreshStatus();
+    pollTimer = setInterval(refreshStatus, 8000);
+  } catch (e) {
+    // Pas de session valide : on reste sur l'écran de connexion.
+  }
+})();
+</script>
+</body>
+</html>
+
