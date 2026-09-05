@@ -234,10 +234,16 @@ async function handleMessages(sock, messageUpdate, printLog) {
     let chatId = null; // déclaré hors du try : toujours accessible dans le catch, jamais de TDZ
     try {
         const { messages, type } = messageUpdate;
-        if (type !== 'notify') return;
+        if (type !== 'notify') {
+            console.log(`🔎 [diag] Message ignoré : type="${type}" (attendu "notify")`);
+            return;
+        }
 
         const message = messages[0];
-        if (!message?.message) return;
+        if (!message?.message) {
+            console.log(`🔎 [diag] Message ignoré : pas de contenu (message.message vide). Clés reçues sur "message":`, message ? Object.keys(message).join(', ') : 'aucune');
+            return;
+        }
 
         // ✅ chatId assigné EN PREMIER, avant tout code pouvant échouer,
         // sinon le bloc catch final ne peut pas répondre en cas d'erreur plus bas
