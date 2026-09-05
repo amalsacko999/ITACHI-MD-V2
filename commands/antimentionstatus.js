@@ -99,9 +99,23 @@ function isStatusMentionMsg(mek) {
     try {
         const msg = mek?.message;
         if (!msg) return false;
-        // Vrai champ WhatsApp pour "groupe mentionné dans un statut" (l'ancien nom
-        // 'groupMentionedMessage' est un champ différent et ne se déclenche jamais ici)
+
+        // 🔍 Diagnostic : si un champ contient "status" ou "mention" dans son nom,
+        // on le note dans les logs — utile si aucun des champs connus ne matche,
+        // pour voir le vrai nom du champ envoyé par WhatsApp dans ce cas précis.
+        const suspectKeys = Object.keys(msg).filter(k => /status|mention/i.test(k));
+        if (suspectKeys.length > 0) {
+            console.log('🔎 [antimentionstatus] Clés suspectes sur ce message:', suspectKeys.join(', '));
+        }
+
+        // Tous les champs connus (doc officielle Baileys) pour "groupe mentionné
+        // via un statut WhatsApp" — WhatsApp a changé ce champ plusieurs fois.
         if (msg.groupStatusMentionMessage) return true;
+        if (msg.statusMentionMessage) return true;
+        if (msg.groupStatusMessage) return true;
+        if (msg.groupStatusMessageV2) return true;
+        if (msg.groupMentionedMessage) return true;
+
         const contextSources = [
             msg.extendedTextMessage?.contextInfo,
             msg.imageMessage?.contextInfo,
