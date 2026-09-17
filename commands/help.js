@@ -176,7 +176,7 @@ async function helpCommand(sock, chatId, message) {
 ║ ⿻ ${p}antitag → anti-tag abusif
 ║ ⿻ ${p}antimentions → antimention
 ║ ⿻ ${p}anticall → bloquer appels
-║ ⿻ ${p}antidelete → anti-suppression
+║ ⿻ ${p}antidelete → anti-suppre
 ║ ⿻ ${p}antipurge → anti-purge abusive
 ║ ⿻ ${p}antimarabout → anti-arnaques
 ╚══════════════════❒
